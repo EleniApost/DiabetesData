@@ -1,0 +1,114 @@
+# Python ≥3.5 is required
+import sys
+assert sys.version_info >= (3, 5)
+
+# Scikit-Learn ≥0.20 is required
+import sklearn
+assert sklearn.__version__ >= "0.20"
+
+# Common imports
+import numpy as np
+import os
+import pandas as pd
+
+# to make this notebook's output stable across runs
+np.random.seed(1)
+
+# To plot pretty figures
+%matplotlib inline
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+mpl.rc('axes', labelsize=14)
+mpl.rc('xtick', labelsize=12)
+mpl.rc('ytick', labelsize=12)
+import seaborn as sns
+
+# Where to save the figures
+PROJECT_ROOT_DIR = "."
+CHAPTER_ID = "classification"
+IMAGES_PATH = os.path.join(PROJECT_ROOT_DIR, "images", CHAPTER_ID)
+os.makedirs(IMAGES_PATH, exist_ok=True)
+
+
+#Exploring the data
+df=pd.read_csv('diabetes_data.csv')
+df.head()
+df.info() 
+df.describe()
+
+# Visualising the data
+fig, ax =plt.subplots(5,4, figsize=(24
+                                    , 26))
+   
+sns.set( {'axes.labelsize' : 16 })
+sns.countplot(ax = ax[0,0], x = df['Gender'])
+
+sns.countplot(ax = ax[0,1], x = df['Polyuria'])
+
+sns.countplot(ax = ax[0,2], x = df['Polydipsia'])
+
+sns.countplot(ax = ax[0,3], x = df['sudden weight loss'])
+
+sns.countplot(ax = ax[1,0], x = df['weakness'])
+
+sns.countplot(ax = ax[1,1], x = df['Polyphagia'])
+
+sns.countplot(ax = ax[1,2], x = df['Genital thrush'])
+
+sns.countplot(ax = ax[1,3], x = df['visual blurring'])
+
+sns.countplot(ax = ax[2,0], x = df['Itching'])
+
+sns.countplot(ax = ax[2,1], x = df['Irritability'])
+
+sns.countplot(ax = ax[2,2], x = df['delayed healing'])
+
+sns.countplot(ax = ax[2,3], x = df['partial paresis'])
+
+sns.countplot(ax = ax[3,0], x = df['muscle stiffness'])
+
+sns.countplot(ax = ax[3,1], x = df['Alopecia'])
+
+sns.countplot(ax = ax[3,2], x = df['Obesity'])
+sns.histplot(ax=ax[3,3], x=df['Age'])
+sns.countplot(ax = ax[4,0], x = df['class'])
+
+fig.suptitle('Data distribution', y =0.9, size = 16)  
+
+plt.savefig('data_vis.png')
+
+#Checking specifically for impalanced data
+ax = sns.countplot(x = df["class"])  
+plt.show()
+
+
+#Data preparation
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import  OrdinalEncoder #We use the ordinal encoder for the labels as there are only two values and it will work for what we need. 
+ordinal_encoder = OrdinalEncoder()
+num_pipeline = Pipeline([('std_scaler', StandardScaler()) # Scaling numerical values
+ ])
+
+
+
+
+full_pipeline = ColumnTransformer([
+        ("num", num_pipeline, attr_num),
+        ("cat", ordinal_encoder, attr_categorical),
+    ])
+
+data_prepared = full_pipeline.fit_transform(df)
+
+data = pd.DataFrame(data_prepared, columns = df.columns)
+
+
+#Looking for correlation
+corr_matrix = data.corr(method = "pearson")
+plt.figure(figsize=(15,15))
+sns.heatmap(corr_matrix,square=True,annot=True,cmap= 'twilight_shifted')
+
+plt.title('Correlation Matrix', y =1.01, size = 16)  
+
+plt.savefig('correlation.png')
