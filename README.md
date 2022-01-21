@@ -1,0 +1,3 @@
+# DiabetesData
+Code for early diabetes prediction
+In this report, a comparative study using machine learning neural network techniques is proposed for the early diagnosis of diabetes. Diabetes mellitus is one of the fastest growing diseases of our times that very frequently goes undiagnosed till the later stages. For this research we have used data containing 520 records, collected by the Sylhet Diabetes Hospital in Bangladesh, to achieve predictions at a much earlier stage. After augmenting and balancing the dataset, we applied Random Forest, XG Boost, K-Nearest Neighbours, Voting Ensemble and Multilayer Neural Network algorithms. We found that Random Forest has the best AUC score with 0.999 and an average accuracy of 98.5%. 
