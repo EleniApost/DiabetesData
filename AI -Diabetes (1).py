@@ -865,7 +865,7 @@ np.random.seed(1)
 ml_loss = []
 ml_auc = []
 ml_accuracy = []
-for times in range(25):
+for times in range(100):
     X_train, X_test, y_train, y_test = train_test_split(data_p, data_labels, train_size = 0.8, shuffle=True)
     X_train,y_train = smote.fit_resample(X_train,y_train)
     input_dim = 16
