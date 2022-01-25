@@ -1,7 +1,8 @@
 #!/usr/bin/env python
+#By Eleni Apostolopoulou
 # coding: utf-8
 
-# In[157]:
+# In[190]:
 
 
 # Python ≥3.5 is required
@@ -55,6 +56,8 @@ from imblearn.over_sampling import SMOTE
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 from sklearn.metrics import roc_auc_score,auc
 import statistics as stats
 import warnings
@@ -754,7 +757,7 @@ from astropy.table                   import Table, Column
 
 # #### Machine learning models
 
-# In[165]:
+# In[204]:
 
 
 
@@ -777,13 +780,23 @@ AUC_forest = []
 AUC_knn = []
 AUC_XGB = []
 AUC_vc = []
+prec_forest=[]
+prec_knn = []
+prec_XGB =[]
+prec_vc =[]
+recall_forest=[]
+recall_knn = []
+recall_XGB =[]
+recall_vc =[]
 
 for times in range(300):
     df_train, df_test,train_labels,test_labels = train_test_split(data_p, data_labels, train_size = 0.8, shuffle=True)
     df_train,train_labels = smote.fit_resample(df_train,train_labels)
     forest.fit(df_train,train_labels)
     f_probs = forest.predict_proba(df_test)[:, 1]
-    forest_auc = roc_auc_score(test_labels,f_probs) 
+    forest_auc = roc_auc_score(test_labels,f_probs)
+    forest_pred = forest.predict(df_test)
+    
     
     #print('Forest:')
     #print('Train accuracy: {}'.format(forest.score(df_train, train_labels)))
@@ -792,6 +805,7 @@ for times in range(300):
     knn.fit(df_train,train_labels)
     k_probs = knn.predict_proba(df_test)[:, 1]
     knn_auc = roc_auc_score(test_labels,k_probs)
+    knn_pred = knn.predict(df_test)
     #print('KNN:')
     #print('Train accuracy: {}'.format(knn.score(df_train, train_labels)))
     #print('Test accuracy: {}'.format(knn.score(df_test, test_labels)))
@@ -821,10 +835,18 @@ for times in range(300):
     AUC_XGB.append(XGB_auc)
     AUC_vc.append(vc_auc)
     
-        
+    prec_forest.append(precision_score(test_labels, forest_pred))
+    prec_knn.append(precision_score(test_labels, knn_pred))
+    prec_XGB.append(precision_score(test_labels, XGB_pred))
+    prec_vc.append(precision_score(test_labels, vc_pred))
+    
+    recall_forest.append(recall_score(test_labels, forest_pred))
+    recall_knn.append(recall_score(test_labels, knn_pred))
+    recall_XGB.append(recall_score(test_labels, XGB_pred))
+    recall_vc.append(recall_score(test_labels, vc_pred))
 
 
-# In[166]:
+# In[205]:
 
 
 from prettytable                     import PrettyTable
@@ -839,7 +861,7 @@ print("Detailed accuracy performance of all models:")
 print(Model_Table)#
 
 
-# In[167]:
+# In[206]:
 
 
 Model_Table2 = PrettyTable()
@@ -853,9 +875,39 @@ print("Detailed AUC performance of all models:")
 print(Model_Table2)#
 
 
+# In[207]:
+
+
+from prettytable                     import PrettyTable
+from astropy.table                   import Table, Column
+Model_Table = PrettyTable()
+Model_Table.field_names = [" ", "   Random forest Classififier  ", "     K-Nearest Neighbours       ", "     XGBoost       ", "Voting classifier"]
+Model_Table.add_row(["  Max  ", round(max(prec_forest),3), round(max(prec_knn),3), round(max(prec_XGB),3),round(max(prec_vc),3)])
+Model_Table.add_row(["  Min  ", round(min(prec_forest),3),round(min(prec_knn),3),round(min(prec_XGB),3),round(min(prec_vc),3)])
+Model_Table.add_row(["  Mean  ", round(stats.mean(prec_forest),3),round(stats.mean(prec_knn),3),round(stats.mean(prec_XGB),3),round(stats.mean(prec_vc),3)])
+Model_Table.add_row(["  StDev  ", round(stats.stdev(prec_forest),3),round(stats.stdev(prec_knn),3),round(stats.stdev(prec_XGB),3),round(stats.stdev(prec_vc),3)])
+print("Detailed precision performance of all models:")
+print(Model_Table)#
+
+
+# In[208]:
+
+
+from prettytable                     import PrettyTable
+from astropy.table                   import Table, Column
+Model_Table = PrettyTable()
+Model_Table.field_names = [" ", "   Random forest Classififier  ", "     K-Nearest Neighbours       ", "     XGBoost       ", "Voting classifier"]
+Model_Table.add_row(["  Max  ", round(max(recall_forest),3), round(max(recall_knn),3), round(max(recall_XGB),3),round(max(recall_vc),3)])
+Model_Table.add_row(["  Min  ", round(min(recall_forest),3),round(min(recall_knn),3),round(min(recall_XGB),3),round(min(recall_vc),3)])
+Model_Table.add_row(["  Mean  ", round(stats.mean(recall_forest),3),round(stats.mean(recall_knn),3),round(stats.mean(recall_XGB),3),round(stats.mean(recall_vc),3)])
+Model_Table.add_row(["  StDev  ", round(stats.stdev(recall_forest),3),round(stats.stdev(recall_knn),3),round(stats.stdev(recall_XGB),3),round(stats.stdev(recall_vc),3)])
+print("Detailed recall performance of all models:")
+print(Model_Table)#
+
+
 # ### Multilayer Neural Network
 
-# In[172]:
+# In[215]:
 
 
 
@@ -865,6 +917,8 @@ np.random.seed(1)
 ml_loss = []
 ml_auc = []
 ml_accuracy = []
+ml_precision = []
+ml_recall = [] 
 for times in range(100):
     X_train, X_test, y_train, y_test = train_test_split(data_p, data_labels, train_size = 0.8, shuffle=True)
     X_train,y_train = smote.fit_resample(X_train,y_train)
@@ -911,7 +965,7 @@ for times in range(100):
     model.fit(X_train, y_train, batch_size=batch_size, epochs=num_epochs, verbose=0, callbacks=[callback, history])
     plt.plot(history.history['loss'], label='train')
     plt.show()
-    
+    mnn_pred = model.predict_classes(X_test)
     #Model Evaluation
     score =(loss, AUC,accuracy) = model.evaluate(X_test, y_test, verbose=0)
     #y_pred=model.predict(X_test)
@@ -919,6 +973,8 @@ for times in range(100):
     ml_loss.append(score[0])
     ml_auc.append(score[1])
     ml_accuracy.append(score[2])
+    ml_precision.append(precision_score(y_test, mnn_pred))
+    ml_recall.append(recall_score(y_test, mnn_pred))
     #print('Test loss:',score[0])
     #print('Test AUC (from tf):',score[1])
     #print('Test accuracy:',score[2])
@@ -926,11 +982,11 @@ for times in range(100):
 #print(ml_loss,ml_auc,ml_accuracy)
 
 Model_Table = PrettyTable()
-Model_Table.field_names = [" ", "   Loss function  ", "     AUC     ", "    Accuracy      "]
-Model_Table.add_row(["  Max  ", round(max(ml_loss),3), round(max(ml_auc),3), round(max(ml_accuracy),3)])
-Model_Table.add_row(["  Min  ", round(min(ml_loss),3),round(min(ml_auc),3),round(min(ml_accuracy),3)])
-Model_Table.add_row(["  Mean  ", round(stats.mean(ml_loss),3),round(stats.mean(ml_auc),3),round(stats.mean(ml_accuracy),3)])
-Model_Table.add_row(["  StDev  ", round(stats.stdev(ml_loss),3),round(stats.stdev(ml_auc),3),round(stats.stdev(ml_accuracy),3)])
+Model_Table.field_names = [" ", "   Loss function  ", "     AUC     ", "    Accuracy      ","    Recall   "]
+Model_Table.add_row(["  Max  ", round(max(ml_loss),3), round(max(ml_auc),3), round(max(ml_accuracy),3),round(max(ml_recall),3)])
+Model_Table.add_row(["  Min  ", round(min(ml_loss),3),round(min(ml_auc),3),round(min(ml_accuracy),3),round(min(ml_recall),3)])
+Model_Table.add_row(["  Mean  ", round(stats.mean(ml_loss),3),round(stats.mean(ml_auc),3),round(stats.mean(ml_accuracy),3),round(stats.mean(ml_recall),3)])
+Model_Table.add_row(["  StDev  ", round(stats.stdev(ml_loss),3),round(stats.stdev(ml_auc),3),round(stats.stdev(ml_accuracy),3),round(stats.stdev(ml_recall),3)])
 print("Detailed accuracy performance of MLNN:")
 print(Model_Table)#
 
